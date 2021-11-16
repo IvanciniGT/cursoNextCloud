@@ -1,0 +1,94 @@
+# La versión del esquema de YAML que usamos en Docker-Compose
+# Que era el esquema de YAML? Una estructura fija de YAML, con las etiquetas que puedo/debo usar
+version: "3"  # En el esquema de docker-compose, version se exige que sea un texto
+
+services:
+    mariadb:   # Es un nombre que se da de alta en el dns de docker que permite en la red de docker identificar 
+               # el/los contenedores que vayamos creando (replicas en un cluster swarm, balanceo gratis)
+        container_name:     mi-mariadb
+        image:              mariadb:latest
+        restart:            unless-stopped                 # no   # always   # on-failure    # unless-stopped
+        ports:
+            - 0.0.0.0:3307:3306
+        volumes:
+            - datos-mysql:/var/lib/mysql
+        environment:
+            - MARIADB_ROOT_PASSWORD=password
+            - MARIADB_DATABASE=nextcloud
+            - MARIADB_USER=usuario
+            - MARIADB_PASSWORD=password
+        #environment:
+        #    MARIADB_ROOT_PASSWORD:     password
+        #    MARIADB_DATABASE:          curso
+        #    MARIADB_USER:              usuario
+        #    MARIADB_PASSWORD:          password
+        #    PORT:                      "81"
+        #    RESTART:                   "true"
+
+    nextcloud:   # Es un nombre que se da de alta en el dns de docker que permite en la red de docker identificar 
+               # el/los contenedores que vayamos creando (replicas en un cluster swarm, balanceo gratis)
+        container_name:     nextcloud
+        image:              nextcloud:22.2.2-apache
+        depends_on:         
+            - mariadb
+        restart:            unless-stopped            # no   # always   # on-failure    # unless-stopped
+        #command:            git clone URL /var/www/html/config && apache2-foreground        # El proceso 1 con el que arranca el contenedor
+        ports:
+                      # Lo abre el host
+                           # El que abre el contenedor en su IP
+            - 0.0.0.0:8080:80
+        volumes:
+            - nextcloud-general:/var/www/html
+            - nextcloud-custom_apps:/var/www/html/custom_apps
+            - nextcloud-config:/var/www/html/config
+            - nextcloud-data:/var/www/html/data
+            - nextcloud-themes:/var/www/html/themes
+        environment:
+            - MYSQL_HOST=mariadb
+            - MYSQL_DATABASE=nextcloud
+            - MYSQL_USER=usuario
+            - MYSQL_PASSWORD=password
+            - NEXTCLOUD_ADMIN_USER=admin
+            - NEXTCLOUD_ADMIN_PASSWORD=admin
+            #- NEXTCLOUD_UPDATE=0  # Esto solo aplica si ejecuto un comando que no sea el por defecto: SI POR EJEMPLO GENERO MI PROPIA IMAGEN
+            # VARIABLES DE CORREO
+            
+#networks:
+
+volumes:
+    datos-mysql:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: /home/ubuntu/environment/datos/mariadb
+    nextcloud-general:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: /home/ubuntu/environment/datos/nextcloud-general
+    nextcloud-custom_apps:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: /home/ubuntu/environment/datos/nextcloud-custom_apps
+    nextcloud-config:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: /home/ubuntu/environment/datos/nextcloud-config
+    nextcloud-data:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: /home/ubuntu/environment/datos/nextcloud-data
+    nextcloud-themes:
+        driver: local
+        driver_opts:
+          type: none
+          o: bind
+          device: /home/ubuntu/environment/datos/nextcloud-themes

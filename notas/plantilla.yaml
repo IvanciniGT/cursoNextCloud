@@ -1,0 +1,92 @@
+# En unico ficheor YAML podemos incluir muchos documentos YAML.
+# Docker-compose, Kubernetes, Openshift, Configuracion red ubuntu, Ansible
+# Esto solo lo puedo hacer en YAML, ni en JSON, ni en XML
+# Un documento de otro se separa por ---
+---
+# Comentarios, con almoadilla
+# Qué es un DOCUMENTO YAML es ---> UN <--- NODO unico
+# NODO: o bien puede ser un escalar o una colección de nodos
+# Escalar:
+    # Numero: 3, 19.8, +.Inf
+    # Texto: 
+        # Hola
+        # "Hola"
+        # 'Hola'
+    # Lógico: True False........ En versiones antiguas: Yes, On, Off, No, n, y
+    #         TRUE false                                YES  on  
+    # nulo: ~
+---
+3
+---
+ho'la
+---
+"ho'la"    # La contrabarra si escapa: \" \\ \n \t
+---
+'ho''l\'a' # La contrabarra no escala. Lo unico escapable es 
+# la comilla, con otra comilla
+---
+# Operadores especiales que existen en YAML para bloques de texto
+# Literal: |
+|
+    Esto e sun texto guay
+        Que no se toca "nada"
+    Ni da problemas de 'nada¡'
+     Ni toma comentarios # que haya por medio
+    
+    Que me respeta linneas en blanco entre medias
+---
+# Folded: >
+>+
+    cp 
+        -r
+        archive/ruta/1
+        archive/ruta/2
+---
+True
+---
+# Nodos de colección
+---
+# Lista ordenadas: Es un conjunto secuencial de NODOS
+- NODO1
+- NODO2
+- NODO3
+---
+- 1
+- True
+- "Hola"
+-   
+    - Item1
+    - Item2
+    - Item2
+---
+[1,2,3,4]
+---
+- 1
+- 2
+- 3
+- 4
+---
+# Mapas: Es otra lista, pero desordenada, 
+#        y donde cada valor, lleva asociado una clave
+# docker-compose define un esquema   YAML: Que etiquetas/ claves debo poner y en que orden
+# kubernetes     define otro esquema YAML: Que etiquetas/ claves debo poner y en que orden
+clave3: 3
+clave1: 
+    subclave1: 1
+    subclave2: 2
+    subclave3: |
+        Uno texto
+        Que ocupa varias lineas
+        Y más!
+        
+clave4: 4
+clave2: 
+    - 1
+    - 2
+    - submapa1: 1
+      submapa2: 2
+
+---
+# Listas desordenadas
+# Mapas ordenados
+# Binarios
