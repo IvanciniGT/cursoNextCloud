@@ -7,6 +7,7 @@ services:
                # el/los contenedores que vayamos creando (replicas en un cluster swarm, balanceo gratis)
         container_name:     mi-mariadb
         image:              mariadb:latest
+        command:            --innodb-read-only-compressed=OFF
         restart:            unless-stopped                 # no   # always   # on-failure    # unless-stopped
         ports:
             - 0.0.0.0:3307:3306
