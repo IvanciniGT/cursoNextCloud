@@ -1,0 +1,187 @@
+---
+# Source: nginx/templates/tls-secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nextcloud.gc.es-tls
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.5.13
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+type: kubernetes.io/tls
+data:
+  tls.crt: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURNekNDQWh1Z0F3SUJBZ0lRWUE5bER0ZDFFTFpiNitkZ05ZUHRaVEFOQmdrcWhraUc5dzBCQVFzRkFEQVQKTVJFd0R3WURWUVFERXdodVoybHVlQzFqWVRBZUZ3MHlNVEV4TVRneE1qVXlNamRhRncweU1qRXhNVGd4TWpVeQpNamRhTUJveEdEQVdCZ05WQkFNVEQyNWxlSFJqYkc5MVpDNW5ZeTVsY3pDQ0FTSXdEUVlKS29aSWh2Y05BUUVCCkJRQURnZ0VQQURDQ0FRb0NnZ0VCQU5xN0ZYSXVFNnQzMzBzRmxSKy9mOXBrWjNuL0xPU3Vhd3M2emNOKzJtY0QKVWFZS3ptczVvYWw1UVo3ZzVyYUVGZGgxQmJFN3hQT2g0ZUlZSEZzNEwzdWYrNDVldzA3dUFBVlVUTjJzSW83OQpySWk3RUk3dllOMXhKTEd5NG0vUHRUS0pqdE43S3QyZ292QUNNajNlbGpucHB5ZkN6TlJWZiswaExBQ0JPUVBICmNaL2lYR2NtamhJcElnYUc2dEVvU1lXUlg5STNFb2dJa0dDVTRzajFwSktyR2VRMWFJS3hPcjBmSjBYdFB2UmcKTlBBY1l1M09oOVQyVCtsRjdZd1MrejQ4NHpzNHJjeVlvelJGdXR2TzdsRWxESm1FK1hDZ1BBa0pVQmhzMUE3bApSbXlLRzJ0WXFIQjNyK3p3NjZZRVl5L0xBekYzbXdqc09LQkE4Z0t5c09FQ0F3RUFBYU44TUhvd0RnWURWUjBQCkFRSC9CQVFEQWdXZ01CMEdBMVVkSlFRV01CUUdDQ3NHQVFVRkJ3TUJCZ2dyQmdFRkJRY0RBakFNQmdOVkhSTUIKQWY4RUFqQUFNQjhHQTFVZEl3UVlNQmFBRkJlcHZFV1piSUo5dmZWbTNnUUxHREhucEo1NE1Cb0dBMVVkRVFRVApNQkdDRDI1bGVIUmpiRzkxWkM1bll5NWxjekFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBSEJXczJFd29yMDJGCnhLeHI5dDRlZzEwRFMvbjBGSDRnQnpSY0hqNS9xRi9yUDVUY08zUVNGZWxTV2JvR0Fkd3Bod2tUZXNVdms3anIKN1RieDNXUTA1QlhKVldkOXAzSkNqR1M4SVhTZjc0V3pjblpwdTZCczRBOHZsQ1BYQXNlZWNYQ1FNQVhpUFhHNAprZlYwQ2tienhPSVFCWUR4UzhRVExxNGNOZlJwdWhQK056MER4Ry9meExvRDJRUVRBZHE2NkhzUk15bGc4aHh1Ck9RRnlTVDVPSUZjRDR3RWNOYVlLd015dWRwL0VvNUVSN2hGSUZSYWxUam1jSUJNYW1vOGxFd3UvSnkzZ1hTdTMKdU9IcEt5Qk1RMURVVzk2MUNkbE1ZNExLaEpCdlRrRk51Y0I3VTZpK3pCTVFjenIxZzRZdnN2ajFzNHdmcW51SwpHU3JtLzdtSVBnPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+  tls.key: "LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBMnJzVmNpNFRxM2ZmU3dXVkg3OS8ybVJuZWY4czVLNXJDenJOdzM3YVp3TlJwZ3JPCmF6bWhxWGxCbnVEbXRvUVYySFVGc1R2RTg2SGg0aGdjV3pndmU1LzdqbDdEVHU0QUJWUk0zYXdpanYyc2lMc1EKanU5ZzNYRWtzYkxpYjgrMU1vbU8wM3NxM2FDaThBSXlQZDZXT2Vtbko4TE0xRlYvN1NFc0FJRTVBOGR4bitKYwpaeWFPRWlraUJvYnEwU2hKaFpGZjBqY1NpQWlRWUpUaXlQV2trcXNaNURWb2dyRTZ2UjhuUmUwKzlHQTA4QnhpCjdjNkgxUFpQNlVYdGpCTDdQanpqT3ppdHpKaWpORVc2Mjg3dVVTVU1tWVQ1Y0tBOENRbFFHR3pVRHVWR2JJb2IKYTFpb2NIZXY3UERycGdSakw4c0RNWGViQ093NG9FRHlBckt3NFFJREFRQUJBb0lCQUFSZlJQaDVUMDlZSUJDQgoxZzlDWnEzWTMvQ2lWeVZqRHlTMFVqU2NMb1Zzblk4eUhCb3NscnlxZmROTkw0OXFhSDFoS1hIM2ZlSlkxQWtPCjdsSXNkMWFEUmlYOFl1OEs5dGtrYkR6cUdlNjl4MXNjVWlKcFNvaGlvSmNrdWozOTZ1Tk51SnNsbFIvRS9EekwKN25FcUo5cVVmeERlWmZYQWw4UUhxN2QrM2NMamlqNGJBS20zMmlJMUl3SnpObnMyUGJiOVFUMVhlbkEvRXExWQpFZnFONXNkWXdZWlUyU2xpUm5zamRLZ2RReFBOdk1OTnpVSnZGV0R4aStLK2ZGZmdQQWlYTnJHYkg3bVhHNGo5CjF4Rlc1RkNrSkJYbG0rUDBEdXY2V2lQaXYwS0FwbHFteXNHckprb2pkZDNPOGF5U2RseU54cFcwRUFYVVk3QWQKTG14T1Fsa0NnWUVBN1EwU0RxVm1PQWZyRDFYeEtramNhOWRQOW84RUhvWWdwUERGTjFoQ2dMMVhrTFNSVWtWVwp2TXdjKy90QWEvcUR5bUFnaElMSVV1K01GdlNGTS9YTzZEdUhKNWphcTJ3K25GcisxT1dJcG1VeVBORjBsWkJFCnFZQjFPamFndThlemx5RzJQdE42bktOOW1uQVZMNk5wNkg2U3NOaWhHZWNqalkxcFFFTktPek1DZ1lFQTdEY2QKSmlRa2E0WkgvenFDQnpEL2VKcUdKM3dmRURPalY1NHMwbWJ6d2tVeWlQazl5VExwTE1MbTJiQ3pQRXRqSlM0cAo0TGVQMFo0WjhEUC9DL3ZGZGJ0VlZkc1RHVXZkaFJJU0g1Tm1aYmQ4b3RQWlVzUFdJQUtwanY3djFBY2RNWlFVCjIxU3BTbmxpMC9nMGptQmcxK2VGR0RhMVZpa2hGNkR3Tmxlenc1c0NnWUVBNDlUSUlpTjkxeVJsRzF3eWFiMlYKZkdCNGpqUnVkUmZja0NxSW9lVEdKZzNVOTFOVXlJbTBEOGp0b3BHZEhTcXROL2lqeURnYWFQdXEzUFV1Z1A0agpXcmk3OGFiTHBDNXBEc1cyWHRBdFFoL0k1UU02MWZUT3lVcVpZTlhZTGlLRnpSK3RsVHlVZjYveXJGaEZSSC8rCjdtR1lnemZ4dm4rVWdCd0ZxS29EMGxrQ2dZQnV2Z1AvYnJCWWJMTHlXSGEvY2x4REtZYTltalpoL1NPV0gwVDYKTzJRS2J6Q2JBT2JUbmZldGtZNXkvcUY1SWdyUVVvMDFtamxsMTg1blM2bEY3L3FLRUpLWVZzWGtkU25jaWpWTwo4bWJ1UnhDNnNjRlFTUm5wRmZaeVlOa0ZPWFNaV3NoUWI2ZVNqOGdpZ2xuNWFmdmRIT0RNRWxIL20vYTB3akg3CitEQUNBd0tCZ1FEUVRiR1A2WFBnTVN3VWl1Wi9mRGdQRlNRTkV6UzF3WGNkcjlOV282eHZrWG1hcGxZbkNsUjQKKzJKbW9KY3V5Ti8rQUxLdmFTa2c3TXN3WGNaTVNPU0d1em1yaVdHZURjYXRDd2U4MzdyR0ZDclZuRXRjdW1lRgpEc1VvWHR2UEM5MGhhV0k1dmtTVjFvVlBBZWhUYUlmQm5jNCtqWEhIVkxsZWpsdS9hQVpPRVE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo="
+  ca.crt: "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURFakNDQWZxZ0F3SUJBZ0lSQU9mMW9zb05EQWMwajkrQVRUR1RQVUl3RFFZSktvWklodmNOQVFFTEJRQXcKRXpFUk1BOEdBMVVFQXhNSWJtZHBibmd0WTJFd0hoY05NakV4TVRFNE1USTFNakkyV2hjTk1qSXhNVEU0TVRJMQpNakkyV2pBVE1SRXdEd1lEVlFRREV3aHVaMmx1ZUMxallUQ0NBU0l3RFFZSktvWklodmNOQVFFQkJRQURnZ0VQCkFEQ0NBUW9DZ2dFQkFLenRiOTFjazFCbDZYd0NkRE1oV2xsSDBiUWdSamNlQ1d0Q3RsU29hQ2Y4bVQySm96QUcKR2ZBMG5mdVgzTkJBSDBJazNLeStacjR2Z21sL211VjRLL1hUMDR1aEdJTW9YWDdYREhUWm5XNkYyTTV1eGFKRgorOWZENXA5aUliQU5la0dMV3gzeUF2T1hiUzhlR1FlM0N1cXk2SUFCMEVGMGhtUkhESlByYmdyYkFQV3RTdVgwClpVd2dVZUVSa1BMR3pqVW1JUExpdnI3SS9DNzZ2WmZQQmFVQ3FudFl4emJFd3J0TXpuQUZUQWQ3eWhqc1VqOG4KR1NselRXc0FUdithT3FoYlpWK0YyaU54aklxeW9nUW9WUCtiNmc3SWI4aXlhK2dzMXlwV1RZcVdVbTBacW5LRQo0WW9Ic3lXRWo3eUl0RkdJMExtWjcxVnBrb3FRdmdtY2MvTUNBd0VBQWFOaE1GOHdEZ1lEVlIwUEFRSC9CQVFECkFnS2tNQjBHQTFVZEpRUVdNQlFHQ0NzR0FRVUZCd01CQmdnckJnRUZCUWNEQWpBUEJnTlZIUk1CQWY4RUJUQUQKQVFIL01CMEdBMVVkRGdRV0JCUVhxYnhGbVd5Q2ZiMzFadDRFQ3hneDU2U2VlREFOQmdrcWhraUc5dzBCQVFzRgpBQU9DQVFFQWw2TmU3QURpbFhPSzJHWC9HSm5WU2dKRi9UT29KbzJyenk1cW8vNk5IckxzN0FSUnIrak5lL00vCkNQbjliTVhWb1VGV09TUUJqRjE4ZUx0NE1JYjg2UC9kT3pXV2N0ZDFjS3h6Z3NSTS9qalJ4d3VmRW5YcDFXVmEKb1hZZkhHTGVJTjlyQlVBUW92QlJhNGsrNWNaNHhYaFovY1lFVENoTEVGSWp6WVdPT1I1a2Q2d3k3SGgrSDdvNAp2RnhtTC9lRWp4STZvbzcybyszUitPem5RMzc5WCtPekRoUDNjTkptaXVneDA5c3ZiZFdXaW9QVXlsdElzYnN6Ci9tR0hXQkk3ZHd0QkVUaDBubm9nUWV2aXFXZm1jSFdSYmR4V2hWRCtzd3ZEREI1RnlSeDhBaEN2aHU3UFJjMjMKY1pkdU92MDlkUGFjYTBBU1JQdUZ6Vkp3M0UvMlZnPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+---
+# Source: nginx/templates/server-block-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-nginx-server-block
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.5.13
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  server-blocks-paths.conf: |-
+    include  "/opt/bitnami/nginx/conf/server_blocks/ldap/*.conf";
+    include  "/opt/bitnami/nginx/conf/server_blocks/common/*.conf";
+---
+# Source: nginx/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-nginx
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.5.13
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: nginx/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-nginx
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.5.13
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 10
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nginx
+        helm.sh/chart: nginx-9.5.13
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      
+      automountServiceAccountToken: false
+      shareProcessNamespace: false
+      serviceAccountName: default
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: nginx
+                    app.kubernetes.io/instance: RELEASE-NAME
+                namespaces:
+                  - "default"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      containers:
+        - name: nginx
+          image: docker.io/bitnami/nginx:1.21.4-debian-10-r0
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+      volumes:
+        - name: nginx-server-block-paths
+          configMap:
+            name: RELEASE-NAME-nginx-server-block
+            items:
+              - key: server-blocks-paths.conf
+                path: server-blocks-paths.conf
+---
+# Source: nginx/templates/hpa.yaml
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: RELEASE-NAME-nginx
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.5.13
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: RELEASE-NAME-nginx
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        targetAverageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        targetAverageUtilization: 300Mi
+---
+# Source: nginx/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-nginx
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.5.13
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+spec:
+  rules:
+    - host: nextcloud.gc.es
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: RELEASE-NAME-nginx
+                port:
+                  name: http
+  tls:
+    - hosts:
+        - nextcloud.gc.es
+      secretName: nextcloud.gc.es-tls

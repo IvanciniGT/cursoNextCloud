@@ -112,3 +112,109 @@ CRONJOB CRONTAB
 En el mundo de kubernetes  hay un par de herramentas estandarizadas que se usan para MONITORIZACION:
     Prometheus    / Grafana
     ElasticSearch / Kibana
+    
+    
+Uso actual memoria es 100mb 
+% ... con respecto a que?
+
+Gibibyte
+Mebibytes
+Kibibyte
+
+300Mi   Mebibytes
+    1024
+    
+300Mb   Megabytes
+    1000 
+
+
+Giga, Mega Kilo SIEMPREKilometro =1000 metros
+Kilobyte = 1000 bytes ¿?¿?¿?¿
+kibibyte
+
+30 Gb = 30 x 1000 Mb = 30 x 1000 x 1000 Kb
+30 Gi = 30 x 1024 Mi = 30 x 1024 x 1024 Kb
+
+
+500 milicores
+    El equivalente a usar media CPU en un segundo
+
+1000 milicores = 1 core al 100% durante 1 segmentar
+                 2 cores al 50% en 1 segmentar
+                 4 cores 25%
+                 
+Maquina 4 cpus
+    pod nginx: 0,5 CPU
+    pod nginx: 0,5 CPU
+    pod nginx: 0,5 CPU
+    pod nginx: 0,5 CPU
+    
+    
+    
+    
+                 
+
+CHARTS DE HELM
+
+CHART plantilla (con cierta lógica) que se completan desde un fichero >>>>> values.yaml <<<<
+
+$ helm template REPO/Plantilla -f values.yaml
+
+antes de poder usar una plantilla (CHART) hemos de dar de alta el repo que la contiene
+
+
+$ helm repo add bitnami https://charts.bitnami.com/bitnami
+$ helm install my-release bitnami/nginx
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm template bitnami/nginx > nginx.yaml             Me permite ver lo que voy a montar
+
+helm pull --untar bitnami/nginx
+
+
+helm install mi bitnami/nginx > nginx.yaml           Me permite instalar
+    Servicio mi-nginx
+
+
+helm repo add nextcloud https://charts.nextcloud.com/nextcloud
+
+
+
+kubernetes solo mira si a nivel de SO existe un proceso nginx en funcionamiento
+
+
+nextcloud -> apache 80
+    maintenance => false          < config.php
+    
+    
+BBDD
+    MariaDB
+            3306
+    admin
+    Arranado SI Me vale NO    Lo tengo que reiniciar
+    Live? NO
+    Ready? NO
+    
+    backup
+    Arrancado SI Sirve a los clientes ? NO   Lo tengo que reiniciar? NO
+    Live? SI
+    Ready? NO
+
+
+
+3 contenedores/pods de nextcloud
+   1 minuto
+   
+servicio nextclud balanceo entre los pods Y/contenedores de nextcloud
+    pod1
+    pod2
+    pod3
+
+live? Sigue vivo no lo reinicio.
+ready? no     No lo meto aun en backend del servoicio (balanceador)
+
+
+nextcloud
+
+lifenessprobe: 700 segundos http
+    upgrade

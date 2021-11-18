@@ -1,30 +1,33 @@
-kind:           Pod
-apiVersion:     v1
+kind:           Deployment
+apiVersion:     apps/v1
 
 metadata:
-    name:       pod-nginx-2
-    labels:
-        app:    nginx-miweb
-
-metadata:
-    name:       pod-nginx-2
-    labels:
-        app:    nginx-miweb
+    name:       deployment-nginx
 
 spec:
-    #initContainers: AQUI VAN CONTENEDORES CON SCRIPTS QUE SE EJECUTAN EN SERIE
-    containers: # Que se queden corriendo (servicios|demonios) NO SCRIPS
-        -   # Contenedor de nginx
-            name:   nginx
-            image:  nginx:latest
-            ports:
-                - containerPort: 80
-            
-        -   # Contenedor de ubuntu
-            name:   ubuntu
-            image:  ubuntu
-            command:    
-                - sh
-                - -c
-                - sleep 3600
-
+    replicas: 4
+    
+    selector:
+        matchLabels:
+            app:    nginx-miweb
+    
+    template:
+        metadata:
+            name:       pod-nginx
+            labels:
+                app:    nginx-miweb
+        
+        spec:
+            containers: # Que se queden corriendo (servicios|demonios) NO SCRIPS
+                -   # Contenedor de nginx
+                    name:   nginx
+                    image:  nginx:latest
+                    ports:
+                        - containerPort: 80
+                    resources:
+                        requests: # Declaración de minimos
+                            memory: 300Mi
+                            cpu:    500m
+                        #limits:   # Aunque haya más, kub no le da mas
+                        #    memory: 300Mi
+                        #    cpu:    500m                        
