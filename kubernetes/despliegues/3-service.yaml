@@ -1,0 +1,19 @@
+kind:           Service
+apiVersion:     v1
+
+metadata:
+    name:       miweb           # Es el nombre que se da de alta en el DNS
+
+spec:
+    type:       NodePort #ClusterIP
+    ports:
+        - port:         8080    # Este es el puerto que se abrirá en IP del servicio (balanceo)
+          targetPort:   80      # IP de backend... de los nginx
+          nodePort:     30080
+    
+    # Este balanceador que se va a montar que tendrá su propia IP
+    # Abrirá el puerto 8080 para atender peticiones que se mandará balanceadas
+    # Al puerto 80 de QUIEN?
+    
+    selector:
+        app:    nginx-miweb

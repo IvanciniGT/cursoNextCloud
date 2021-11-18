@@ -1,0 +1,10 @@
+kind:           Namespace # Tipo de objeto que define este documento
+apiVersion:     v1
+                # Ponemos la librería en la que se define ese tipo de objeto que estamos creando
+                    # [NOMBRE DE LA LIBRERIA/]VERSION
+                # Kubernetes permite definir una serie de tipos de objetos
+                # Kubernetes permite instalar OPERADORES, que son programas que amplian los tipos de objetos que podemos crear
+                # Amplian la funcionalidad de kubernetes (PLUGINS)
+
+metadata:
+    name:       ivan

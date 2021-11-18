@@ -1,0 +1,30 @@
+kind:           Pod
+apiVersion:     v1
+
+metadata:
+    name:       pod-nginx-2
+    labels:
+        app:    nginx-miweb
+
+metadata:
+    name:       pod-nginx-2
+    labels:
+        app:    nginx-miweb
+
+spec:
+    #initContainers: AQUI VAN CONTENEDORES CON SCRIPTS QUE SE EJECUTAN EN SERIE
+    containers: # Que se queden corriendo (servicios|demonios) NO SCRIPS
+        -   # Contenedor de nginx
+            name:   nginx
+            image:  nginx:latest
+            ports:
+                - containerPort: 80
+            
+        -   # Contenedor de ubuntu
+            name:   ubuntu
+            image:  ubuntu
+            command:    
+                - sh
+                - -c
+                - sleep 3600
+
