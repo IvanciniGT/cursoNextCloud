@@ -1,0 +1,625 @@
+---
+# Source: nextcloud/charts/mariadb/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: RELEASE-NAME-mariadb
+  namespace: nc-ivan
+  labels:
+    app.kubernetes.io/name: mariadb
+    helm.sh/chart: mariadb-9.6.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+---
+# Source: nextcloud/charts/mariadb/templates/primary/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-mariadb
+  namespace: nc-ivan
+  labels:
+    app.kubernetes.io/name: mariadb
+    helm.sh/chart: mariadb-9.6.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: primary
+data:
+  my.cnf: |-
+    [mysqld]
+    skip-name-resolve
+    explicit_defaults_for_timestamp
+    basedir=/opt/bitnami/mariadb
+    plugin_dir=/opt/bitnami/mariadb/plugin
+    port=3306
+    socket=/opt/bitnami/mariadb/tmp/mysql.sock
+    tmpdir=/opt/bitnami/mariadb/tmp
+    max_allowed_packet=16M
+    bind-address=0.0.0.0
+    pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+    log-error=/opt/bitnami/mariadb/logs/mysqld.log
+    character-set-server=UTF8
+    collation-server=utf8_general_ci
+    
+    [client]
+    port=3306
+    socket=/opt/bitnami/mariadb/tmp/mysql.sock
+    default-character-set=UTF8
+    plugin_dir=/opt/bitnami/mariadb/plugin
+    
+    [manager]
+    port=3306
+    socket=/opt/bitnami/mariadb/tmp/mysql.sock
+    pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
+---
+# Source: nextcloud/templates/nginx-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-nextcloud-nginxconfig
+  labels:
+    app.kubernetes.io/name: nextcloud
+    helm.sh/chart: nextcloud-2.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  nginx.conf: |-
+    worker_processes auto;
+
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+
+
+    events {
+        worker_connections  1024;
+    }
+
+
+    http {
+        include       /etc/nginx/mime.types;
+        default_type  application/octet-stream;
+
+        log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log  /var/log/nginx/access.log  main;
+
+        sendfile        on;
+        #tcp_nopush     on;
+
+        keepalive_timeout  65;
+
+        #gzip  on;
+
+        upstream php-handler {
+            server 127.0.0.1:9000;
+        }
+
+        server {
+            listen 80;
+
+            # HSTS settings
+            # WARNING: Only add the preload option once you read about
+            # the consequences in https://hstspreload.org/. This option
+            # will add the domain to a hardcoded list that is shipped
+            # in all major browsers and getting removed from this list
+            # could take several months.
+            #add_header Strict-Transport-Security "max-age=15768000; includeSubDomains; preload;" always;
+
+            # set max upload size
+            client_max_body_size 10G;
+            fastcgi_buffers 64 4K;
+
+            # Enable gzip but do not remove ETag headers
+            gzip on;
+            gzip_vary on;
+            gzip_comp_level 4;
+            gzip_min_length 256;
+            gzip_proxied expired no-cache no-store private no_last_modified no_etag auth;
+            gzip_types application/atom+xml application/javascript application/json application/ld+json application/manifest+json application/rss+xml application/vnd.geo+json application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/bmp image/svg+xml image/x-icon text/cache-manifest text/css text/plain text/vcard text/vnd.rim.location.xloc text/vtt text/x-component text/x-cross-domain-policy;
+
+            # Pagespeed is not supported by Nextcloud, so if your server is built
+            # with the `ngx_pagespeed` module, uncomment this line to disable it.
+            #pagespeed off;
+
+            # HTTP response headers borrowed from Nextcloud `.htaccess`
+            add_header Referrer-Policy                      "no-referrer"   always;
+            add_header X-Content-Type-Options               "nosniff"       always;
+            add_header X-Download-Options                   "noopen"        always;
+            add_header X-Frame-Options                      "SAMEORIGIN"    always;
+            add_header X-Permitted-Cross-Domain-Policies    "none"          always;
+            add_header X-Robots-Tag                         "none"          always;
+            add_header X-XSS-Protection                     "1; mode=block" always;
+
+            # Remove X-Powered-By, which is an information leak
+            fastcgi_hide_header X-Powered-By;
+
+            # Path to the root of your installation
+            root /var/www/html;
+
+            # Specify how to handle directories -- specifying `/index.php$request_uri`
+            # here as the fallback means that Nginx always exhibits the desired behaviour
+            # when a client requests a path that corresponds to a directory that exists
+            # on the server. In particular, if that directory contains an index.php file,
+            # that file is correctly served; if it doesn't, then the request is passed to
+            # the front-end controller. This consistent behaviour means that we don't need
+            # to specify custom rules for certain paths (e.g. images and other assets,
+            # `/updater`, `/ocm-provider`, `/ocs-provider`), and thus
+            # `try_files $uri $uri/ /index.php$request_uri`
+            # always provides the desired behaviour.
+            index index.php index.html /index.php$request_uri;
+
+            # Rule borrowed from `.htaccess` to handle Microsoft DAV clients
+            location = / {
+                if ( $http_user_agent ~ ^DavClnt ) {
+                    return 302 /remote.php/webdav/$is_args$args;
+                }
+            }
+
+            location = /robots.txt {
+                allow all;
+                log_not_found off;
+                access_log off;
+            }
+
+            # Make a regex exception for `/.well-known` so that clients can still
+            # access it despite the existence of the regex rule
+            # `location ~ /(\.|autotest|...)` which would otherwise handle requests
+            # for `/.well-known`.
+            location ^~ /.well-known {
+                # The following 6 rules are borrowed from `.htaccess`
+
+                location = /.well-known/carddav     { return 301 /remote.php/dav/; }
+                location = /.well-known/caldav      { return 301 /remote.php/dav/; }
+                # Anything else is dynamically handled by Nextcloud
+                location ^~ /.well-known            { return 301 /index.php$uri; }
+
+                try_files $uri $uri/ =404;
+            }
+
+            # Rules borrowed from `.htaccess` to hide certain paths from clients
+            location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)(?:$|/)  { return 404; }
+            location ~ ^/(?:\.|autotest|occ|issue|indie|db_|console)              { return 404; }
+
+            # Ensure this block, which passes PHP files to the PHP process, is above the blocks
+            # which handle static assets (as seen below). If this block is not declared first,
+            # then Nginx will encounter an infinite rewriting loop when it prepends `/index.php`
+            # to the URI, resulting in a HTTP 500 error response.
+            location ~ \.php(?:$|/) {
+                fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+                set $path_info $fastcgi_path_info;
+
+                try_files $fastcgi_script_name =404;
+
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_param PATH_INFO $path_info;
+                #fastcgi_param HTTPS on;
+
+                fastcgi_param modHeadersAvailable true;         # Avoid sending the security headers twice
+                fastcgi_param front_controller_active true;     # Enable pretty urls
+                fastcgi_pass php-handler;
+
+                fastcgi_intercept_errors on;
+                fastcgi_request_buffering off;
+            }
+
+            location ~ \.(?:css|js|svg|gif)$ {
+                try_files $uri /index.php$request_uri;
+                expires 6M;         # Cache-Control policy borrowed from `.htaccess`
+                access_log off;     # Optional: Don't log access to assets
+            }
+
+            location ~ \.woff2?$ {
+                try_files $uri /index.php$request_uri;
+                expires 7d;         # Cache-Control policy borrowed from `.htaccess`
+                access_log off;     # Optional: Don't log access to assets
+            }
+
+            location / {
+                try_files $uri $uri/ /index.php$request_uri;
+            }
+        }
+    }
+---
+# Source: nextcloud/charts/mariadb/templates/primary/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-mariadb
+  namespace: nc-ivan
+  labels:
+    app.kubernetes.io/name: mariadb
+    helm.sh/chart: mariadb-9.6.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: primary
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+    - name: mysql
+      port: 3306
+      protocol: TCP
+      targetPort: mysql
+      nodePort: null
+  selector: 
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/component: primary
+---
+# Source: nextcloud/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-nextcloud
+  labels:
+    app.kubernetes.io/name: nextcloud
+    helm.sh/chart: nextcloud-2.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: app
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: http
+    protocol: TCP
+    name: http
+    nodePort: 
+  selector:
+    app.kubernetes.io/name: nextcloud
+    app.kubernetes.io/component: app
+---
+# Source: nextcloud/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-nextcloud
+  labels:
+    app.kubernetes.io/name: nextcloud
+    helm.sh/chart: nextcloud-2.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: app
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nextcloud
+      app.kubernetes.io/instance: RELEASE-NAME
+      app.kubernetes.io/component: app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nextcloud
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/component: app
+    spec:
+      containers:
+      - name: nextcloud
+        image: "nextcloud:21.0.7-fpm"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: MYSQL_HOST
+          value: RELEASE-NAME-mariadb
+        - name: MYSQL_DATABASE
+          value: "nextcloud"
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: username
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-secret
+              key: password
+        - name: NEXTCLOUD_ADMIN_USER
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: username
+        - name: NEXTCLOUD_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: password
+        - name: NEXTCLOUD_TRUSTED_DOMAINS
+          value: nextcloud.gc.es
+        - name: NEXTCLOUD_DATA_DIR
+          value: "/var/www/html/data"
+        - name: MAIL_FROM_ADDRESS
+          value: "user"
+        - name: MAIL_DOMAIN
+          value: "domain.com"
+        - name: SMTP_HOST
+          value: "domain.com"
+        - name: SMTP_SECURE
+          value: "ssl"
+        - name: SMTP_PORT
+          value: "465"
+        - name: SMTP_AUTHTYPE
+          value: "LOGIN"
+        - name: SMTP_NAME
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: smtp_username
+        - name: SMTP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: nextcloud-secret
+              key: smtp_password
+        resources:
+          requests:
+            cpu: 1000m
+            memory: 4000Mi
+        volumeMounts:
+        - name: nextcloud-data
+          mountPath: /var/www/
+          subPath: root
+        - name: nextcloud-data
+          mountPath: /var/www/html
+          subPath: html
+        - name: nextcloud-data
+          mountPath: /var/www/html/data
+          subPath: data
+        - name: nextcloud-data
+          mountPath: /var/www/html/config
+          subPath: config
+        - name: nextcloud-data
+          mountPath: /var/www/html/custom_apps
+          subPath: custom_apps
+        - name: nextcloud-data
+          mountPath: /var/www/tmp
+          subPath: tmp
+        - name: nextcloud-data
+          mountPath: /var/www/html/themes
+          subPath: themes
+      - name: nextcloud-nginx
+        image: "nginx:alpine"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /status.php
+            port: http
+            httpHeaders:
+            - name: Host
+              value: "nextcloud.gc.es"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /status.php
+            port: http
+            httpHeaders:
+            - name: Host
+              value: "nextcloud.gc.es"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        resources:
+          {}
+        volumeMounts:
+        - name: nextcloud-data
+          mountPath: /var/www/
+          subPath: root
+        - name: nextcloud-data
+          mountPath: /var/www/html
+          subPath: html
+        - name: nextcloud-data
+          mountPath: /var/www/html/data
+          subPath: data
+        - name: nextcloud-data
+          mountPath: /var/www/html/config
+          subPath: config
+        - name: nextcloud-data
+          mountPath: /var/www/html/custom_apps
+          subPath: custom_apps
+        - name: nextcloud-data
+          mountPath: /var/www/tmp
+          subPath: tmp
+        - name: nextcloud-data
+          mountPath: /var/www/html/themes
+          subPath: themes
+        - name: nextcloud-nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+      nodeSelector:
+        maquina: nextcloud-ivan
+      initContainers:
+      - name: mariadb-isalive
+        image: bitnami/mariadb:10.5.12-debian-10-r32
+        env:
+          - name: MYSQL_USER
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: username
+          - name: MYSQL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: mariadb-secret
+                key: password
+        command:
+          - "sh"
+          - "-c"
+          - until mysql --host=RELEASE-NAME-mariadb --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --execute="SELECT 1;"; do echo waiting for mysql; sleep 2; done;
+      volumes:
+      - name: nextcloud-data
+        persistentVolumeClaim:
+          claimName: pvc-datos-nextcloud
+      - name: nextcloud-nginx-config
+        configMap:
+          name: RELEASE-NAME-nextcloud-nginxconfig
+      # Will mount configuration files as www-data (id: 82) for nextcloud
+      securityContext:
+        fsGroup: 82
+---
+# Source: nextcloud/charts/mariadb/templates/primary/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-mariadb
+  namespace: nc-ivan
+  labels:
+    app.kubernetes.io/name: mariadb
+    helm.sh/chart: mariadb-9.6.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: primary
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels: 
+      app.kubernetes.io/name: mariadb
+      app.kubernetes.io/instance: RELEASE-NAME
+      app.kubernetes.io/component: primary
+  serviceName: RELEASE-NAME-mariadb
+  updateStrategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        checksum/configuration: 69f018f472ffc32bf23fb5236c7fe9f40d1a51bf115fd25a09ae7f98f5a8bda2
+      labels:
+        app.kubernetes.io/name: mariadb
+        helm.sh/chart: mariadb-9.6.1
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: primary
+    spec:
+      
+      serviceAccountName: RELEASE-NAME-mariadb
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: mariadb
+                    app.kubernetes.io/instance: RELEASE-NAME
+                    app.kubernetes.io/component: primary
+                namespaces:
+                  - "nc-ivan"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: mariadb
+          image: docker.io/bitnami/mariadb:10.5.12-debian-10-r32
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            runAsUser: 1001
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: mariadb-root-password
+            - name: MARIADB_USER
+              value: "usuarioBBDD"
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: mariadb-password
+            - name: MARIADB_DATABASE
+              value: "nextcloud"
+          ports:
+            - name: mysql
+              containerPort: 3306
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 120
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - |
+                  password_aux="${MARIADB_ROOT_PASSWORD:-}"
+                  if [[ -f "${MARIADB_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MARIADB_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin status -uroot -p"${password_aux}"
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 1
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - |
+                  password_aux="${MARIADB_ROOT_PASSWORD:-}"
+                  if [[ -f "${MARIADB_ROOT_PASSWORD_FILE:-}" ]]; then
+                      password_aux=$(cat "$MARIADB_ROOT_PASSWORD_FILE")
+                  fi
+                  mysqladmin status -uroot -p"${password_aux}"
+          resources: 
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/mariadb
+            - name: config
+              mountPath: /opt/bitnami/mariadb/conf/my.cnf
+              subPath: my.cnf
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-mariadb
+        - name: data
+          persistentVolumeClaim:
+            claimName: pvc-datos-mariadb
+---
+# Source: nextcloud/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: RELEASE-NAME-nextcloud
+  labels:
+    app.kubernetes.io/name: nextcloud
+    helm.sh/chart: nextcloud-2.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: app
+spec:
+  rules:
+  - host: nextcloud.gc.es
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: RELEASE-NAME-nextcloud
+            port:
+              number: 8080

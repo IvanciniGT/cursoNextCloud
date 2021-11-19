@@ -1,0 +1,486 @@
+# TODAS LAS LINEAS QUE SE HAN CAMBIADO LLEVAN EL TAG: CAMBIADO
+# TODAS LOS COMENTARIOS SOBRE PROPIEDADES LLEVAN EL TAG: NOTA
+
+## Official nextcloud image version
+## ref: https://hub.docker.com/r/library/nextcloud/tags/
+##
+image:
+  repository: nextcloud
+  tag: 21.0.7-fpm                     # CAMBIADO
+  pullPolicy: IfNotPresent
+  # pullSecrets:
+  #   - myRegistrKeySecretName
+
+# NOTA: Por defectco las cosas se van a llamar precedidas por el RELEASE_NAME
+# Esto es el nombre con el que se instala el CHART. Pej:
+# gc-nextcloud-deployment
+# Podriamos cambviuarlo con estos parametros
+nameOverride: ""
+fullnameOverride: ""
+
+# Number of replicas to be deployed
+# NOTA: Si quiero un cluster activo/activo
+replicaCount: 1       # CAMBIADO
+
+## Allowing use of ingress controllers
+## ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+##
+# NOTA: Esto es una regla para un proxy reverso (INGRESS CONTROLLER) 
+# Para poder acceder a la aplicación posteriormente
+# NOTA: Esto requiere tener instalado un ingress-controller
+ingress:
+  enabled: true      # TRUE
+  # className: nginx
+  annotations: {}
+  #  nginx.ingress.kubernetes.io/proxy-body-size: 4G
+  #  kubernetes.io/tls-acme: "true"
+  #  cert-manager.io/cluster-issuer: letsencrypt-prod
+  #  nginx.ingress.kubernetes.io/server-snippet: |-
+  #    server_tokens off;
+  #    proxy_hide_header X-Powered-By;
+
+  #    rewrite ^/.well-known/webfinger /public.php?service=webfinger last;
+  #    rewrite ^/.well-known/host-meta /public.php?service=host-meta last;
+  #    rewrite ^/.well-known/host-meta.json /public.php?service=host-meta-json;
+  #    location = /.well-known/carddav {
+  #      return 301 $scheme://$host/remote.php/dav;
+  #    }
+  #    location = /.well-known/caldav {
+  #      return 301 $scheme://$host/remote.php/dav;
+  #    }
+  #    location = /robots.txt {
+  #      allow all;
+  #      log_not_found off;
+  #      access_log off;
+  #    }
+  #    location ~ ^/(?:build|tests|config|lib|3rdparty|templates|data)/ {
+  #      deny all;
+  #    }
+  #    location ~ ^/(?:autotest|occ|issue|indie|db_|console) {
+  #      deny all;
+  #    }
+  # tls:
+  #   - secretName: nextcloud-tls
+  #     hosts:
+  #       - nextcloud.kube.home
+  labels: {}
+  path: /
+  pathType: Prefix
+
+
+# Allow configuration of lifecycle hooks
+# ref: https://kubernetes.io/docs/tasks/configure-pod-container/attach-handler-lifecycle-event/
+lifecycle: {}
+  # postStartCommand: []
+  # preStopCommand: []
+
+nextcloud:
+  host: nextcloud.gc.es     # CAMBIADO. Esto hay que darlo de alta en un DNS EXTERNO
+                            # NOTA: La IP tiene que ser la que configuremos en el ingressController
+                            # La podeis ver ejecutando:
+                            # $ kubectl get service -n ingress-nginx
+  #username: admin                    # CAMBIADO
+  #password: changeme                 # CAMBIADO
+  ## Use an existing secret
+  existingSecret:
+     enabled: true                     # CAMBIADO
+     secretName: nextcloud-secret     # CAMBIADO
+     usernameKey: username          
+     passwordKey: password     
+     smtpUsernameKey: smtp_username     
+     smtpPasswordKey: smtp_password     
+  update: 0
+  # If web server is not binding default port, you can define it
+  # containerPort: 8080
+  datadir: /var/www/html/data
+  persistence:
+    subPath:
+  mail:
+    enabled: true           # CAMBIADO
+    fromAddress: user       # CAMBIADO
+    domain: domain.com      # CAMBIADO
+    smtp:
+      host: domain.com      # CAMBIADO
+      secure: ssl
+      port: 465
+      authtype: LOGIN
+      name: user
+      password: pass
+  # PHP Configuration files
+  # Will be injected in /usr/local/etc/php/conf.d for apache image and in /usr/local/etc/php-fpm.d when nginx.enabled: true
+  phpConfigs: {}    # NOTA: Que se admitan fich3eros muy grandes o cosas especificicas de PHP
+  # Default config files
+  # IMPORTANT: Will be used only if you put extra configs, otherwise default will come from nextcloud itself
+  # Default confgurations can be found here: https://github.com/nextcloud/docker/tree/master/16.0/apache/config
+  defaultConfigs:
+    # To protect /var/www/html/config
+    .htaccess: true
+    # Redis default configuration
+    redis.config.php: true
+    # Apache configuration for rewrite urls
+    apache-pretty-urls.config.php: true
+    # Define APCu as local cache
+    apcu.config.php: true
+    # Apps directory configs
+    apps.config.php: true
+    # Used for auto configure database
+    autoconfig.php: true
+    # SMTP default configuration
+    smtp.config.php: true
+  # Extra config files created in /var/www/html/config/
+  # ref: https://docs.nextcloud.com/server/15/admin_manual/configuration_server/config_sample_php_parameters.html#multiple-config-php-file
+  configs: {}
+
+  # For example, to use S3 as primary storage
+  # ref: https://docs.nextcloud.com/server/13/admin_manual/configuration_files/primary_storage.html#simple-storage-service-s3
+  #
+  #  configs:
+  #    s3.config.php: |-
+  #      <?php
+  #      $CONFIG = array (
+  #        'objectstore' => array(
+  #          'class' => '\\OC\\Files\\ObjectStore\\S3',
+  #          'arguments' => array(
+  #            'bucket'     => 'my-bucket',
+  #            'autocreate' => true,
+  #            'key'        => 'xxx',
+  #            'secret'     => 'xxx',
+  #            'region'     => 'us-east-1',
+  #            'use_ssl'    => true
+  #          )
+  #        )
+  #      );
+
+  ## Strategy used to replace old pods
+  ## IMPORTANT: use with care, it is suggested to leave as that for upgrade purposes
+  ## ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+  strategy:
+    type: Recreate
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 1
+    #   maxUnavailable: 0
+
+  ##
+  ## Extra environment variables
+  extraEnv:
+  #  - name: SOME_SECRET_ENV
+  #    valueFrom:
+  #      secretKeyRef:
+  #        name: nextcloud
+  #        key: secret_key
+
+  # Extra mounts for the pods. Example shown is for connecting a legacy NFS volume
+  # to NextCloud pods in Kubernetes. This can then be configured in External Storage
+  extraVolumes:
+  #  - name: nfs
+  #    nfs:
+  #      server: "10.0.0.1"
+  #      path: "/nextcloud_data"
+  #      readOnly: false
+  extraVolumeMounts:
+  #  - name: nfs
+  #    mountPath: "/legacy_data"
+
+  # Extra secuurityContext parameters. For example you may need to define runAsNonRoot directive
+  # extraSecurityContext:
+  #   runAsUser: "33"
+  #   runAsGroup: "33"
+  #   runAsNonRoot: true
+  #   readOnlyRootFilesystem: true
+
+nginx:
+  ## You need to set an fpm version of the image for nextcloud if you want to use nginx!
+  enabled: true                     #CAMBIADO
+  image:
+    repository: nginx
+    tag: alpine
+    pullPolicy: IfNotPresent
+
+  config:
+    # This generates the default nginx config as per the nextcloud documentation
+    default: true
+    # custom: |-
+    #     worker_processes  1;..
+
+  resources: {}
+
+internalDatabase:
+  enabled: false          # CAMBIADO: Vamos a usar un MariaDB. 
+                          # La interna seria un SQLITE
+  name: nextcloud
+
+##
+## External database configuration
+##
+# NOTA: Activar en el caso de MARIADB GALERA
+externalDatabase:
+  enabled: false
+
+  ## Supported database engines: mysql or postgresql
+  type: mysql
+
+  ## Database host
+  host: # NOTA: CAMBIAR AL HOST (Servicio de MARIADB Galera)
+
+  ## Database user
+  #user: nextcloud      # CAMBIADO
+
+  ## Database password
+  #password:            # CAMBIADO
+
+  ## Database name
+  database: nextcloud
+
+  ## Use a existing secret
+  existingSecret:
+    enabled: true                 # CAMBIADO
+    secretName: mariadb-secret    # CAMBIADO
+    usernameKey: username
+    passwordKey: password
+
+##
+## MariaDB chart configuration
+##
+# NOTA: Este chart le hace BITNAMI.
+# NO ME PUEDO FIAR DE LAS ETIQUETAS QUE HAY PUESTAS AQUI...
+# AQUI HABRA POCAS DE EJEMPLO
+# TENGO QUE MIRAR LO QUE PUEDO PONER SEGUN LO INDIQUE EL CHART DE BITNAMI
+
+# En el fichero chat.yaml, indica :
+# Que se montará un mariadb siempre y cuando la propiedad enabled este en true
+# Y ademas, nos dice el chart que se utilzia para ello
+mariadb:
+  ## Whether to deploy a mariadb server to satisfy the applications database requirements. To use an external database set this to false and configure the externalDatabase parameters
+  enabled: true      # CAMBIADO
+
+  ########################################################################
+    # NOTA: AQUI DENTRO pongo lo que venga en el values.yaml del chart de mariadb
+  ########################################################################
+  auth:
+    database: nextcloud
+    username: usuarioBBDD    # CAMBIADO
+    #password: changeme   # CAMBIADO
+    existingSecret: mariadb-secret      # CAMBIADO
+
+  architecture: standalone   # CAMBIADO   replication
+
+  ## Enable persistence using Persistent Volume Claims
+  ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  primary:
+    persistence:
+      enabled: true     # CAMBIADO
+      # storageClass: ""
+      #accessMode: ReadWriteOnce
+      #size: 8Gi
+      existingClaim: pvc-datos-mariadb     # CAMBIADO
+  ########################################################################
+    #HASTA AQUI
+  ########################################################################
+
+##
+## PostgreSQL chart configuration
+## for more options see https://github.com/bitnami/charts/tree/master/bitnami/postgresql
+##
+postgresql:
+  enabled: false
+  postgresqlUsername: nextcloud
+  postgresqlPassword: changeme
+  postgresqlDatabase: nextcloud
+  persistence:
+    enabled: false
+    # storageClass: ""
+
+redis:
+  enabled: false
+  usePassword: true
+  password: 'changeme'
+
+## Cronjob to execute Nextcloud background tasks
+## ref: https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#webcron
+##
+cronjob:
+  enabled: false     # NOTA para ejecutar cron.php del nexcloud con una periodicidad
+  # Nexcloud image is used as default but only curl is needed
+  image: {}
+    # repository: nextcloud
+    # tag: 16.0.3-apache
+    # pullPolicy: IfNotPresent
+    # pullSecrets:
+    #   - myRegistrKeySecretName
+  # Every 5 minutes
+  # Note: Setting this to any any other value than 5 minutes might
+  #  cause issues with how nextcloud background jobs are executed
+  schedule: "*/5 * * * *"
+  annotations: {}
+  # Set curl's insecure option if you use e.g. self-signed certificates
+  curlInsecure: false
+  failedJobsHistoryLimit: 5
+  successfulJobsHistoryLimit: 2
+  # If not set, nextcloud deployment one will be set
+  # resources:
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #  cpu: 100m
+    #  memory: 128Mi
+    # requests:
+    #  cpu: 100m
+    #  memory: 128Mi
+
+  # If not set, nextcloud deployment one will be set
+  # nodeSelector: {}
+
+  # If not set, nextcloud deployment one will be set
+  # tolerations: []
+
+  # If not set, nextcloud deployment one will be set
+  # affinity: {}
+
+service:
+  type: NodePort          # CAMBIADO: DEJAR EN ClusterIP
+  port: 8080
+  loadBalancerIP: nil
+  nodePort: ~    # CAMBIADO
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  # Nextcloud Data (/var/www/html)
+  enabled: true     # CAMBIADO
+  annotations: {}
+  ## nextcloud data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+
+  ## A manually managed Persistent Volume and Claim
+  ## Requires persistence.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  existingClaim: pvc-datos-nextcloud      # CAMBIADO
+
+  #accessMode: ReadWriteOnce      # CAMBIADO
+  #size: 8Gi                      # CAMBIADO
+
+resources:                       # CAMBIADO
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:                            
+  #  cpu: 100m
+  #  memory: 128Mi
+  # Estos son minimos garantizados. Si hay libre mas se usará más
+   requests:                                # CAMBIADO
+    cpu: 1000m                              # CAMBIADO: En vuestro entorno si hay 8 dejar en 6 pej
+    memory: 4000Mi                          # CAMBIADO NOTA: REVISAR BIEN ESTE DATO
+                                            # NOTA: EL SO usa mucha RAM:
+                                            # BUFFERS DE FICHEROS
+
+## Liveness and readiness probe values
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+##
+# NOTA: Estos valores NO SON SUFICIENTES SI EL SISTEMA NECESITA ACTUALIZARSE
+# EN ESE CASO HABRIA QUE SUBIRLOS DRAMATICAMENTE... pej. 600, 800
+# Al actualziar lo cambiaremos... despues de actualizar revertimos el cambio
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+startupProbe:
+  enabled: false
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+  successThreshold: 1
+
+
+## Enable pod autoscaling using HorizontalPodAutoscaler
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+##
+# NOTA: Si queremos autoescalado, activar
+# NOTA: Lo guay seria autoescalar. Pero en ese escenario nos interesarian pods PEQUEÑOS
+# request:
+# cpu: 2000m
+# memory: 4000Mi
+# NOTA MAS IMPORTANTE: En vuestro entorno, como teneis los recursos escasos,
+# Mejor no autoescalar y dejar fijo 1 o 2 con el maximo posible de RAM
+hpa:
+  enabled: false
+  cputhreshold: 60
+  minPods: 2
+  maxPods: 6
+
+nodeSelector:               # CAMBIADO
+  maquina: nextcloud-ivan   # CAMBIADO
+# NOTA: Aqui pondria si quiero un modelo en el que NEXTCLOUD se instale en una unica maquina
+# SIEMPRE EN LA MISMA
+# En este caso pondría etiquetas
+# Poner esa etiqueta en todos los nodos donde quiera que se pueda instalar un pod de nextcloud
+# kubectl label node NOMBRE_NODO maquina=nextcloud-ivan
+
+tolerations: []
+
+affinity: {}
+
+
+## Prometheus Exporter / Metrics
+##
+# SI QUISIERA MONITOZAR CON PROMETHEUS/GRAFANA, activo esto
+metrics:
+  enabled: false   # NOTA: Este lo cambiaria
+
+  replicaCount: 1
+  # The metrics exporter needs to know how you serve Nextcloud either http or https
+  https: false     # NOTA: Este lo cambiaria
+  timeout: 5s
+
+  image:
+    repository: xperimental/nextcloud-exporter
+    tag: v0.4.0
+    pullPolicy: IfNotPresent
+
+  ## Metrics exporter resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  # resources: {}
+
+  ## Metrics exporter pod Annotation and Labels
+  # podAnnotations: {}
+
+  # podLabels: {}
+
+  service:
+    type: ClusterIP
+    ## Use serviceLoadBalancerIP to request a specific static IP,
+    ## otherwise leave blank
+    # loadBalancerIP:
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "9205"
+    labels: {}
+
+rbac:
+  enabled: false
+  serviceaccount:
+    create: true
+    name: nextcloud-serviceaccount

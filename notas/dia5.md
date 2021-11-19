@@ -81,3 +81,33 @@ helm install ---> Crear muchas cosas
 helm uninstall ---> Borra todo lo que el haya creado
 
 Los secrets y los pvc los creamos nosotros : BUENA PRACTICA 
+
+
+
+MARIADB: Replicas:
+    1 Standalone    |
+    2 Replicacion   |   Chart de helm: externalDatabase: false
+    -------------
+    3 Galera        |   Un chart especifico de mariadb galera
+                                        externalDatabase: true
+                                        
+                                        
+nginx
+balanceo
+
+navegado ---> 1 pod
+
+2 pods - nextcloud 1 ---> login SESION RAM
+         nextcloud 2
+         
+         
+MIGRAR A KUBERNETES:
+    - Copiar los datos de nextcloud a los nuevos volumenes
+    - MariaDB:
+        Si instalais la misma version de mariadb, o una superior, pero en las mismas condiciones
+        Copiar los ficheros del volumen 
+        
+        De no ser asi, teneis que hacer un export de la BBDD
+        
+        Crear la bbdd en otro servidor dentro de kubernetes 
+        Y hacerle un import
