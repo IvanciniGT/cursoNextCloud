@@ -208,10 +208,10 @@ externalDatabase:
   host:
 
   ## Database user
-  user: nextcloud
+  #user: lucas
 
   ## Database password
-  password:
+  #password: esta es mi supercontraseña
 
   ## Database name
   database: nextcloud
@@ -219,9 +219,9 @@ externalDatabase:
   ## Use a existing secret
   existingSecret:
     enabled: false
-    # secretName: nameofsecret
-    # usernameKey: username
-    # passwordKey: password
+    secretName: mis-secretos
+    usernameKey: usuario-bbdd
+    passwordKey: contrasena-bbdd
 
 ##
 ## MariaDB chart configuration
@@ -385,7 +385,8 @@ hpa:
   minPods: 1
   maxPods: 10
 
-nodeSelector: {}
+nodeSelector: 
+  maquina: NACHO
 
 tolerations: []
 

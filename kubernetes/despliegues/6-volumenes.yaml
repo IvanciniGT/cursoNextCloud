@@ -1,0 +1,75 @@
+kind:           PersistentVolume
+apiVersion:     v1
+
+metadata:
+    name:       volumen-datos-nginx
+
+spec:
+    capacity: 
+        storage: 40Gi
+    
+    storageClassName: rapidito
+    accessModes:
+        - ReadWriteOnce
+    
+    hostPath:
+        path: /home/ubuntu/environment/datos/kubernetes/nginx
+        type: DirectoryOrCreate
+---
+kind:           PersistentVolumeClaim
+apiVersion:     v1
+
+metadata:
+    name:       peticion-volumen-datos-nginx
+
+spec:
+    resources:
+        requests: 
+            storage: 20Gi
+    
+    storageClassName: rapidito
+    accessModes:
+        - ReadWriteOnce
+---
+kind:           Pod
+apiVersion:     v1
+
+metadata:
+    name:       pod-nginx
+    labels:
+        app:    nginx-miweb
+
+spec:
+    nodeSelector:
+        instalar: NACHO
+        
+    affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: instalar
+                operator: In
+                values:
+                - NACHO
+
+    volumes:
+        - name: datos
+          persistentVolumeClaim: # Peticion de volumen persistente
+            claimName: peticion-volumen-datos-nginx
+          #tipo 
+          #hostPath:
+          #  path: /home/ubuntu/environment/datos/kubernetes/nginx
+          #  type: DirectoryOrCreate
+          #nfs:
+          #  path: 
+          #  server: 
+    containers: 
+        -   # Contenedor de nginx
+            name:   nginx
+            image:  nginx:latest
+            ports:
+                - containerPort: 80
+            volumeMounts:
+                - name: datos
+                  mountPath: /datos
